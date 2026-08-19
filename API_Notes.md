@@ -817,3 +817,1439 @@ That's much stronger than simply saying **"API means Application Programming Int
 
 ---
 
+# Part 2 — REST, HTTP, URLs, Methods & Status Codes
+
+Part 1 covered the basic concepts of **Client, Server, API, Web Services, SOAP, REST, GraphQL and gRPC**.
+
+Now we move into the **most important practical section for API testing**.
+
+By the end of Part 2, you should understand:
+
+> **How to read an API URL → how to send a request → which HTTP method to use → how to understand the response/status code.**
+
+---
+
+# 1. What is REST?
+
+**REST** stands for:
+
+> **Representational State Transfer**
+
+REST is an **architectural style** used to design APIs.
+
+REST APIs commonly use HTTP methods such as:
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+```
+
+to perform operations on resources. ([MDN Web Docs][1])
+
+### Example
+
+Suppose we have an Event API.
+
+```text
+GET https://api.example.com/events
+```
+
+This could mean:
+
+> Get the list of events.
+
+And:
+
+```text
+GET https://api.example.com/events/101
+```
+
+could mean:
+
+> Get event 101.
+
+---
+
+# 2. What is a Resource?
+
+A **resource** is the data or object that an API provides access to.
+
+Examples:
+
+```text
+Users
+Products
+Orders
+Events
+Employees
+Customers
+Payments
+```
+
+For example:
+
+```text
+/users
+/products
+/orders
+/events
+```
+
+Here:
+
+```text
+/users       → User resource
+/products    → Product resource
+/events      → Event resource
+```
+
+---
+
+# 3. What is a URL?
+
+**URL** stands for:
+
+> **Uniform Resource Locator**
+
+A URL identifies the location of a resource on a network.
+
+Example:
+
+```text
+https://api.example.com/users/101
+```
+
+Let's break it down.
+
+```text
+https://api.example.com/users/101
+│       │               │      │
+│       │               │      └── Path Parameter
+│       │               └───────── Path
+│       └───────────────────────── Domain/Host
+└───────────────────────────────── Protocol
+```
+
+---
+
+# 4. Components of an API URL
+
+Consider:
+
+```text
+https://api.example.com/v1/users/101?active=true
+```
+
+| Component       | Value             |
+| --------------- | ----------------- |
+| Protocol        | `https`           |
+| Domain/Host     | `api.example.com` |
+| Version         | `v1`              |
+| Path            | `/users/101`      |
+| Path Parameter  | `101`             |
+| Query Parameter | `active=true`     |
+
+Let's understand each one.
+
+---
+
+# 5. Protocol
+
+The beginning:
+
+```text
+https://
+```
+
+is the **protocol/scheme**.
+
+Commonly you'll see:
+
+```text
+http://
+https://
+```
+
+For APIs, HTTPS is generally preferred because it protects data in transit using encryption.
+
+---
+
+# 6. Domain
+
+Example:
+
+```text
+https://api.example.com/users
+       └──────────────┘
+          Domain
+```
+
+The domain identifies the host where the API is available.
+
+For your EventHub API, the host is:
+
+```text
+api.eventhub.rahulshettyacademy.com
+```
+
+---
+
+# 7. Base URL
+
+The **base URL** is the common starting portion used by multiple API endpoints.
+
+For example:
+
+```text
+https://api.example.com
+```
+
+Then different endpoints may be:
+
+```text
+/users
+/events
+/products
+/orders
+```
+
+So:
+
+```text
+Base URL + Endpoint Path
+```
+
+gives the complete API URL.
+
+Postman similarly describes a base URL as the base location and the endpoint as the path used for a particular API operation. ([Postman Docs][2])
+
+---
+
+# 8. Endpoint
+
+An **API endpoint** is a specific URL through which an API accepts requests for a particular operation/resource.
+
+For example:
+
+```text
+GET /users
+```
+
+and:
+
+```text
+GET /users/101
+```
+
+are endpoints.
+
+An endpoint is commonly understood using:
+
+```text
+HTTP Method + URL/Path
+```
+
+For example:
+
+```text
+GET https://api.example.com/users/101
+```
+
+means:
+
+> Retrieve user 101.
+
+([Postman Blog][3])
+
+---
+
+# 9. Path
+
+The path identifies the resource location within the API.
+
+Example:
+
+```text
+https://api.example.com/users/101
+                      └─────────┘
+                          Path
+```
+
+The path is:
+
+```text
+/users/101
+```
+
+Another example:
+
+```text
+/products
+```
+
+---
+
+# 10. Path Parameter
+
+A **path parameter** is a value included directly in the URL path to identify a specific resource.
+
+Example:
+
+```text
+GET /users/101
+```
+
+Here:
+
+```text
+101
+```
+
+is the path parameter.
+
+It identifies a specific user.
+
+### Another example
+
+```text
+GET /events/500
+```
+
+Here:
+
+```text
+500
+```
+
+is the event ID.
+
+Conceptually:
+
+```text
+/events/{eventId}
+```
+
+Actual request:
+
+```text
+/events/500
+```
+
+Path parameters are commonly used when you need to identify a specific resource. ([Postman Docs][4])
+
+### Easy way to remember
+
+> **Path parameter = Which specific resource?**
+
+Example:
+
+```text
+/users/101
+```
+
+Means:
+
+> User number 101.
+
+---
+
+# 11. Query Parameter
+
+A **query parameter** is additional information added to the URL after `?`.
+
+Example:
+
+```text
+GET /events?city=Hyderabad
+```
+
+Here:
+
+```text
+city=Hyderabad
+```
+
+is a query parameter.
+
+Multiple query parameters are separated using `&`.
+
+Example:
+
+```text
+GET /events?city=Hyderabad&type=technical
+```
+
+Here we have:
+
+```text
+city=Hyderabad
+type=technical
+```
+
+Query parameters are commonly used for filtering, sorting, searching and pagination. ([Postman Docs][4])
+
+### Easy way to remember
+
+> **Path parameter = identify the resource.**
+
+> **Query parameter = filter/customize the result.**
+
+### Example
+
+```text
+/events/101
+```
+
+→ Give me **event 101**.
+
+```text
+/events?city=Hyderabad
+```
+
+→ Give me **events in Hyderabad**.
+
+---
+
+# 12. Path Parameter vs Query Parameter
+
+| Path Parameter                         | Query Parameter                    |
+| -------------------------------------- | ---------------------------------- |
+| Part of URL path                       | Comes after `?`                    |
+| Usually identifies a specific resource | Usually filters/customizes results |
+| Example `/users/101`                   | Example `/users?city=Hyderabad`    |
+| Often required                         | Often optional                     |
+| Uses `/`                               | Uses `?` and `&`                   |
+
+### Interview answer
+
+> A path parameter is used to identify a specific resource and forms part of the URL path, while a query parameter is generally used to filter, search, sort, paginate or customize the response.
+
+---
+
+# 13. Headers
+
+**Headers** contain additional information/metadata about an HTTP request or response.
+
+Examples:
+
+```text
+Content-Type: application/json
+Authorization: Bearer <token>
+Accept: application/json
+```
+
+HTTP headers allow clients and servers to exchange additional information about the message. ([MDN Web Docs][5])
+
+### Common headers
+
+#### Content-Type
+
+Tells the server what format the request body uses.
+
+Example:
+
+```text
+Content-Type: application/json
+```
+
+Means:
+
+> The request body is JSON.
+
+#### Accept
+
+Tells the server what response format the client can accept.
+
+```text
+Accept: application/json
+```
+
+#### Authorization
+
+Used to send authentication credentials/token.
+
+```text
+Authorization: Bearer <token>
+```
+
+---
+
+# 14. Request Body
+
+The **request body** contains data sent from the client to the server.
+
+It is commonly used with:
+
+```text
+POST
+PUT
+PATCH
+```
+
+Example:
+
+```http
+POST /users
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "name": "Ankitha",
+  "email": "ankitha@example.com"
+}
+```
+
+Postman supports sending body data in formats such as raw, form-data and URL-encoded data. ([Postman Docs][4])
+
+---
+
+# 15. Response Body
+
+The response body contains the data returned by the server.
+
+Example:
+
+```json
+{
+  "id": 101,
+  "name": "Ankitha",
+  "email": "ankitha@example.com"
+}
+```
+
+As a QA, you may validate:
+
+* Required fields
+* Field values
+* Data types
+* JSON structure
+* Business rules
+* Error messages
+
+---
+
+# 16. Complete API Request Structure
+
+A REST API request can look like this:
+
+```text
+GET https://api.example.com/users/101?active=true
+Authorization: Bearer token
+Accept: application/json
+```
+
+Let's identify everything:
+
+```text
+GET
+ ↓
+HTTP Method
+
+https://
+ ↓
+Protocol
+
+api.example.com
+ ↓
+Domain
+
+/users/101
+ ↓
+Path
+
+101
+ ↓
+Path Parameter
+
+?active=true
+ ↓
+Query Parameter
+
+Authorization
+ ↓
+Header
+```
+
+---
+
+# 17. HTTP vs HTTPS
+
+### HTTP
+
+**HTTP = HyperText Transfer Protocol**
+
+It is used for communication between clients and servers.
+
+Example:
+
+```text
+http://example.com
+```
+
+### HTTPS
+
+**HTTPS = HTTP Secure**
+
+HTTPS uses encryption through TLS to protect communication between client and server.
+
+Example:
+
+```text
+https://example.com
+```
+
+### Difference
+
+| HTTP                           | HTTPS                  |
+| ------------------------------ | ---------------------- |
+| Not encrypted by TLS           | Encrypted by TLS       |
+| Less secure for sensitive data | More secure            |
+| Uses `http://`                 | Uses `https://`        |
+| Port 80 commonly used          | Port 443 commonly used |
+
+### Interview answer
+
+> HTTP is a protocol used for communication between clients and servers, while HTTPS is HTTP secured using TLS encryption to protect data transmitted between them.
+
+---
+
+# 18. HTTP Methods
+
+HTTP methods tell the server **what operation the client wants to perform**. They are also called HTTP verbs. ([MDN Web Docs][5])
+
+The main methods you need for API testing are:
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+```
+
+We'll also briefly cover:
+
+```text
+HEAD
+OPTIONS
+```
+
+---
+
+# 19. GET Method
+
+### Purpose
+
+**GET** is used to retrieve data.
+
+Example:
+
+```text
+GET /users
+```
+
+Means:
+
+> Get users.
+
+Specific user:
+
+```text
+GET /users/101
+```
+
+Means:
+
+> Get user 101.
+
+GET is intended to retrieve a representation of a resource and is considered safe and idempotent. ([MDN Web Docs][6])
+
+### Example response
+
+```json
+{
+  "id": 101,
+  "name": "Ankitha"
+}
+```
+
+### QA validations
+
+Check:
+
+* Status code
+* Response body
+* Response fields
+* Data
+* Headers
+* Response time
+
+---
+
+# 20. POST Method
+
+### Purpose
+
+**POST** is commonly used to create a new resource or submit data for processing.
+
+Example:
+
+```text
+POST /users
+```
+
+Request body:
+
+```json
+{
+  "name": "Ankitha",
+  "email": "ankitha@example.com"
+}
+```
+
+Possible response:
+
+```text
+201 Created
+```
+
+POST can cause a change in server state and is generally not idempotent. ([MDN Web Docs][1])
+
+### QA validations
+
+Check:
+
+* Correct status code
+* Resource created
+* Generated ID
+* Response body
+* Database/data consistency
+* Validation errors
+* Duplicate handling
+
+---
+
+# 21. PUT Method
+
+### Purpose
+
+**PUT** is generally used to replace the current representation of a resource with the supplied representation.
+
+Example:
+
+```text
+PUT /users/101
+```
+
+Body:
+
+```json
+{
+  "name": "Ankitha",
+  "email": "new@example.com",
+  "city": "Hyderabad"
+}
+```
+
+PUT is defined as idempotent. ([MDN Web Docs][1])
+
+### Important
+
+Think:
+
+> **PUT = Replace/update the resource representation**
+
+---
+
+# 22. PATCH Method
+
+### Purpose
+
+**PATCH** is used for a **partial modification** of a resource.
+
+Suppose the existing user is:
+
+```json
+{
+  "name": "Ankitha",
+  "email": "old@example.com",
+  "city": "Hyderabad"
+}
+```
+
+You only want to change the email.
+
+```text
+PATCH /users/101
+```
+
+Body:
+
+```json
+{
+  "email": "new@example.com"
+}
+```
+
+Only the specified field is modified.
+
+PATCH is specifically defined for partial modifications. ([MDN Web Docs][1])
+
+### Easy memory
+
+```text
+PUT   → Full replacement
+PATCH → Partial modification
+```
+
+---
+
+# 23. DELETE Method
+
+### Purpose
+
+DELETE is used to delete a specified resource.
+
+Example:
+
+```text
+DELETE /users/101
+```
+
+Means:
+
+> Delete user 101.
+
+DELETE is defined as idempotent, although the response to repeated requests can vary depending on the API implementation. ([MDN Web Docs][1])
+
+Possible response:
+
+```text
+204 No Content
+```
+
+---
+
+# 24. HEAD Method
+
+HEAD is similar to GET, but the server returns the response headers without the response body.
+
+Example:
+
+```text
+HEAD /users/101
+```
+
+It can be useful when you want to check whether a resource exists or inspect metadata without downloading the representation.
+
+([MDN Web Docs][1])
+
+---
+
+# 25. OPTIONS Method
+
+OPTIONS is used to discover the communication options supported by a target resource/server.
+
+For example, a server may indicate:
+
+```text
+Allow: GET, POST, OPTIONS
+```
+
+This tells the client which methods are supported in that context. ([MDN Web Docs][7])
+
+---
+
+# 26. HTTP Methods — Quick Table
+
+| Method  | Main Purpose          | Example             |
+| ------- | --------------------- | ------------------- |
+| GET     | Retrieve              | `GET /users/101`    |
+| POST    | Create/submit         | `POST /users`       |
+| PUT     | Replace               | `PUT /users/101`    |
+| PATCH   | Partial update        | `PATCH /users/101`  |
+| DELETE  | Delete                | `DELETE /users/101` |
+| HEAD    | Headers only          | `HEAD /users/101`   |
+| OPTIONS | Communication options | `OPTIONS /users`    |
+
+---
+
+# 27. CRUD and HTTP Methods
+
+A very important interview concept is **CRUD**.
+
+CRUD means:
+
+```text
+C → Create
+R → Read
+U → Update
+D → Delete
+```
+
+Mapping:
+
+| CRUD           | HTTP Method |
+| -------------- | ----------- |
+| Create         | POST        |
+| Read           | GET         |
+| Update/Replace | PUT         |
+| Partial Update | PATCH       |
+| Delete         | DELETE      |
+
+### Easy memory
+
+```text
+POST   → Create
+GET    → Read
+PUT    → Update/Replace
+PATCH  → Partial Update
+DELETE → Delete
+```
+
+---
+
+# 28. What is an HTTP Status Code?
+
+An **HTTP status code** tells the client the outcome of the request.
+
+For example:
+
+```text
+200 OK
+```
+
+means the request was successfully processed.
+
+HTTP status codes are grouped into five classes. ([MDN Web Docs][5])
+
+```text
+1xx → Informational
+2xx → Success
+3xx → Redirection
+4xx → Client Error
+5xx → Server Error
+```
+
+---
+
+# 29. 1xx — Informational
+
+These indicate that the request has been received/understood and processing is continuing.
+
+Examples:
+
+```text
+100 Continue
+101 Switching Protocols
+```
+
+For normal API testing, these are less commonly the focus.
+
+---
+
+# 30. 2xx — Success
+
+These indicate that the request was successfully handled.
+
+### 200 OK
+
+Request succeeded.
+
+Example:
+
+```text
+GET /users/101
+```
+
+Response:
+
+```text
+200 OK
+```
+
+---
+
+### 201 Created
+
+A new resource was successfully created.
+
+Commonly associated with successful POST operations.
+
+Example:
+
+```text
+POST /users
+```
+
+Response:
+
+```text
+201 Created
+```
+
+---
+
+### 202 Accepted
+
+The request has been accepted for processing, but processing may not yet be complete.
+
+---
+
+### 204 No Content
+
+The request succeeded, but there is no response body.
+
+A common example is a successful DELETE.
+
+---
+
+# 31. 3xx — Redirection
+
+These indicate that further action may be needed or the resource/request has been redirected.
+
+Important examples:
+
+```text
+301 Moved Permanently
+302 Found
+304 Not Modified
+```
+
+---
+
+# 32. 4xx — Client Errors
+
+These indicate a problem with the request from the client side.
+
+### 400 Bad Request
+
+The server cannot process the request because the request is invalid.
+
+Example:
+
+```json
+{
+  "email": 
+}
+```
+
+Invalid JSON/request format could result in 400.
+
+---
+
+### 401 Unauthorized
+
+Usually means the request lacks valid authentication credentials.
+
+Example:
+
+```text
+Authorization token missing/invalid
+```
+
+### Important interview point
+
+**401 does not normally mean "you don't have permission."**
+
+It is primarily associated with **authentication**.
+
+---
+
+### 403 Forbidden
+
+The server understood the request, but the authenticated client is not allowed to perform the operation.
+
+Think:
+
+```text
+401 → Who are you?
+403 → I know who you are, but you can't do this.
+```
+
+---
+
+### 404 Not Found
+
+The requested resource/endpoint could not be found.
+
+Example:
+
+```text
+GET /users/999999
+```
+
+if that user does not exist.
+
+---
+
+### 405 Method Not Allowed
+
+The resource exists, but the HTTP method isn't allowed for that endpoint.
+
+Example:
+
+```text
+DELETE /users
+```
+
+when the endpoint doesn't support DELETE.
+
+---
+
+### 409 Conflict
+
+The request conflicts with the current state of the resource.
+
+For example, an API may use 409 when attempting to create a duplicate resource.
+
+---
+
+### 422 Unprocessable Content
+
+The request format can be understood, but the supplied data fails semantic/business validation.
+
+Example:
+
+```text
+Event date is invalid
+```
+
+The exact status code chosen depends on the API contract.
+
+---
+
+### 429 Too Many Requests
+
+The client has sent too many requests within a specified period/rate limit.
+
+---
+
+# 33. 5xx — Server Errors
+
+These indicate that the server encountered an error while processing a valid-looking request.
+
+### 500 Internal Server Error
+
+Generic server-side error.
+
+### 502 Bad Gateway
+
+A gateway/proxy received an invalid response from an upstream server.
+
+### 503 Service Unavailable
+
+The server/service is temporarily unavailable.
+
+### 504 Gateway Timeout
+
+A gateway/proxy did not receive a timely response from an upstream server.
+
+---
+
+# 34. Important Status Codes for QA
+
+You should memorize these first:
+
+```text
+200 → OK
+201 → Created
+202 → Accepted
+204 → No Content
+
+400 → Bad Request
+401 → Unauthorized
+403 → Forbidden
+404 → Not Found
+405 → Method Not Allowed
+409 → Conflict
+422 → Validation/Semantic error
+429 → Too Many Requests
+
+500 → Internal Server Error
+502 → Bad Gateway
+503 → Service Unavailable
+504 → Gateway Timeout
+```
+
+The exact status code expected should always be judged against the API's documented contract; different APIs can legitimately choose different codes for some situations. ([Postman Blog][8])
+
+---
+
+# 35. Very Important: Status Code Alone Is Not Enough
+
+This is a **QA interview point**.
+
+Suppose you send:
+
+```text
+GET /users/101
+```
+
+and receive:
+
+```text
+200 OK
+```
+
+Can you immediately say the test passed?
+
+### No.
+
+You should also verify:
+
+```text
+Status Code
+     ↓
+Response Body
+     ↓
+Response Data
+     ↓
+Headers
+     ↓
+Business Rules
+     ↓
+Response Time
+```
+
+Example:
+
+Expected:
+
+```json
+{
+  "id": 101,
+  "name": "Ankitha"
+}
+```
+
+Actual:
+
+```json
+{
+  "id": 101,
+  "name": "Rahul"
+}
+```
+
+Status:
+
+```text
+200 OK
+```
+
+The HTTP request technically succeeded, but **your API test should fail if the business/data expectation was Ankitha**.
+
+---
+
+# 36. Complete API Flow
+
+Now combine everything we learned.
+
+Suppose we have:
+
+```text
+GET https://api.example.com/users/101?active=true
+```
+
+### Step 1 — Client
+
+Postman sends the request.
+
+### Step 2 — Method
+
+```text
+GET
+```
+
+Means:
+
+> Retrieve data.
+
+### Step 3 — Protocol
+
+```text
+HTTPS
+```
+
+### Step 4 — Domain
+
+```text
+api.example.com
+```
+
+### Step 5 — Path
+
+```text
+/users/101
+```
+
+### Step 6 — Path Parameter
+
+```text
+101
+```
+
+Identifies the specific user.
+
+### Step 7 — Query Parameter
+
+```text
+active=true
+```
+
+Adds filtering/customization.
+
+### Step 8 — Server processes request
+
+Server may check:
+
+* Authentication
+* Authorization
+* User existence
+* Business rules
+* Database
+
+### Step 9 — Server response
+
+```text
+200 OK
+```
+
+### Step 10 — Response body
+
+```json
+{
+  "id": 101,
+  "name": "Ankitha",
+  "active": true
+}
+```
+
+### QA validates
+
+```text
+✓ Status code
+✓ Response body
+✓ User ID
+✓ User name
+✓ Active status
+✓ Headers
+✓ Response time
+```
+
+---
+
+# 37. Interview Questions — Part 2
+
+### Q1. What is REST?
+
+> REST stands for Representational State Transfer. It is an architectural style for designing networked APIs, commonly using HTTP methods to operate on resources.
+
+### Q2. What is an endpoint?
+
+> An endpoint is a specific API location/URL through which a client can access a particular resource or operation.
+
+### Q3. What is a path parameter?
+
+> A path parameter is a value included in the URL path to identify a specific resource, such as `/users/101`.
+
+### Q4. What is a query parameter?
+
+> A query parameter is additional information appended after `?` in a URL, commonly used for filtering, searching, sorting or pagination.
+
+### Q5. Difference between path and query parameter?
+
+> Path parameters identify a specific resource, whereas query parameters generally filter, search, sort, paginate or customize the returned data.
+
+### Q6. Difference between PUT and PATCH?
+
+> PUT is generally used to replace the resource representation, whereas PATCH is used for partial modification.
+
+### Q7. What is the difference between 401 and 403?
+
+> 401 generally indicates that valid authentication credentials are missing or invalid, while 403 indicates that the server understands the client but refuses to authorize the requested operation.
+
+### Q8. What is the difference between 200 and 201?
+
+> 200 indicates a successful request, while 201 indicates that a new resource was successfully created.
+
+### Q9. What is 404?
+
+> 404 Not Found indicates that the requested resource or endpoint could not be found.
+
+### Q10. If an API returns 200, does that mean the test passed?
+
+> No. We must also validate the response body, data, headers, business rules, and other expected conditions.
+
+---
+
+# ⭐ Part 2 — Quick Revision Sheet
+
+Memorize this:
+
+```text
+URL
+ ↓
+Protocol + Domain + Path + Parameters
+```
+
+```text
+Path Parameter
+ ↓
+Identifies a specific resource
+
+Query Parameter
+ ↓
+Filters/customizes the result
+```
+
+```text
+POST   → Create
+GET    → Read
+PUT    → Replace
+PATCH  → Partial Update
+DELETE → Delete
+```
+
+```text
+1xx → Information
+2xx → Success
+3xx → Redirection
+4xx → Client Error
+5xx → Server Error
+```
+
+And the most important API testing flow:
+
+```text
+Request
+   ↓
+Method
+   ↓
+URL
+   ↓
+Headers
+   ↓
+Parameters
+   ↓
+Body
+   ↓
+Server
+   ↓
+Status Code
+   ↓
+Response Headers
+   ↓
+Response Body
+   ↓
+Validate Everything
+```
+
+
