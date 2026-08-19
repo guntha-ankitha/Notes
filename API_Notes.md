@@ -4089,6 +4089,1316 @@ And remember the **three most important API testing validations**:
 > **Status Code + Response Body + Business Logic**
 
 ---
+# Part 4 — EventHub API Practical Project
+
+Now we will apply everything from Parts 1–3 to a **real API testing project**.
+
+Your API documentation is:
+
+[EventHub API Documentation](https://api.eventhub.rahulshettyacademy.com/api/docs)
+
+The EventHub practice application is designed specifically for QA practice and includes real REST APIs, authentication, CRUD and booking-related flows. ([EventHub][1])
+
+> **Important:** The API documentation is the source of truth for the exact endpoint, request body, authentication and expected responses. Some endpoints can change, so don't memorize URLs from examples—verify them in Swagger.
+
+---
+
+# 1. EventHub API — What Are We Testing?
+
+EventHub is an event-management application.
+
+At a high level, we can think of the application as:
+
+```text
+                    EventHub
+                       |
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+      Users          Events         Tickets
+        |              |              |
+      Login          Create          Buy
+      Signup         Get             View
+      Profile        Update          Manage
+```
+
+The API documentation exposes functionality around users, events and ticket-related operations. The publicly indexed documentation shows examples such as user signup/login, current-user information, event retrieval/creation and ticket operations. ([Event Hub][2])
+
+---
+
+# 2. Our API Testing Objective
+
+Our objective is to verify that:
+
+> **EventHub APIs work according to their documented requirements and correctly handle valid, invalid and unexpected inputs.**
+
+We will validate:
+
+```text
+✓ HTTP method
+✓ Endpoint
+✓ Authentication
+✓ Request headers
+✓ Request parameters
+✓ Request body
+✓ Status code
+✓ Response body
+✓ Response data
+✓ Error messages
+✓ Business rules
+✓ Authorization
+✓ Response time
+```
+
+---
+
+# 3. EventHub Test Scope
+
+We can divide testing into these modules:
+
+### Module 1 — User
+
+```text
+Signup
+Login
+Current User
+Password-related functionality
+Verification
+```
+
+### Module 2 — Events
+
+```text
+Get Events
+Get Event
+Create Event
+Update Event
+Delete Event
+Event activities
+```
+
+### Module 3 — Tickets/Bookings
+
+```text
+Buy tickets
+View tickets
+```
+
+The publicly indexed EventHub API documentation also shows endpoints for creating events, retrieving events, event activities, user authentication and tickets. ([Event Hub][2])
+
+---
+
+# 4. Test Environment
+
+For your project, maintain the following:
+
+| Item              | Value                       |
+| ----------------- | --------------------------- |
+| Application       | EventHub                    |
+| API Documentation | Swagger/OpenAPI             |
+| API Tool          | Postman                     |
+| Automation        | REST Assured later          |
+| Language          | Java                        |
+| Test Framework    | TestNG                      |
+| Environment       | EventHub sandbox            |
+| Test Data         | Dedicated test account/data |
+
+The EventHub practice environment provides an isolated sandbox so testers can work with their own data. ([EventHub][1])
+
+---
+
+# 5. Authentication Flow
+
+Before testing protected APIs, understand authentication.
+
+A typical flow is:
+
+```text
+User
+ ↓
+Login API
+ ↓
+Credentials validated
+ ↓
+Token generated
+ ↓
+Client stores token
+ ↓
+Token sent with protected requests
+```
+
+For example:
+
+```text
+POST /user/login
+```
+
+The documented API describes this operation as verifying user credentials and returning a token. ([Event Hub][2])
+
+Then:
+
+```text
+GET /user/current-user
+```
+
+can be called with the authentication token. ([Event Hub][2])
+
+---
+
+# 6. Authentication Test Scenarios
+
+We should test:
+
+### Positive
+
+```text
+Valid username
++
+Valid password
+```
+
+Expected:
+
+> Successful login and token returned.
+
+### Negative
+
+```text
+Invalid username
+Valid password
+```
+
+Expected:
+
+> Authentication failure.
+
+---
+
+```text
+Valid username
+Invalid password
+```
+
+Expected:
+
+> Authentication failure.
+
+---
+
+```text
+Missing username
+```
+
+Expected:
+
+> Validation/authentication error.
+
+---
+
+```text
+Missing password
+```
+
+Expected:
+
+> Validation/authentication error.
+
+---
+
+```text
+Invalid/expired token
+```
+
+Expected:
+
+> Protected API should reject the request.
+
+---
+
+# 7. User Module — Test Scenarios
+
+## Signup
+
+Example operation:
+
+```text
+POST /user/signup
+```
+
+The indexed documentation identifies this operation as creating a new user. ([Event Hub][2])
+
+### Positive test
+
+```text
+Valid email
+Valid password
+Valid required fields
+```
+
+Expected:
+
+> User should be created successfully.
+
+### Negative tests
+
+```text
+Email missing
+Password missing
+Invalid email
+Weak password
+Duplicate email
+Empty values
+Null values
+Invalid data types
+```
+
+---
+
+# 8. Login API — Test Cases
+
+### TC_USER_001
+
+**Scenario:** Login with valid credentials
+
+```text
+Method: POST
+Expected: Successful authentication
+```
+
+---
+
+### TC_USER_002
+
+**Scenario:** Login with invalid password
+
+```text
+Method: POST
+Input: Valid user + invalid password
+Expected: Authentication error
+```
+
+---
+
+### TC_USER_003
+
+**Scenario:** Login with non-existing user
+
+Expected:
+
+> Authentication failure.
+
+---
+
+### TC_USER_004
+
+**Scenario:** Login with blank password
+
+Expected:
+
+> Validation error.
+
+---
+
+### TC_USER_005
+
+**Scenario:** Verify token returned after successful login
+
+Expected:
+
+> Response contains a valid authentication token according to the API contract.
+
+---
+
+# 9. Current User API
+
+The documentation exposes:
+
+```text
+GET /user/current-user
+```
+
+to retrieve information about the current user. ([Event Hub][2])
+
+### Test cases
+
+| Test                  | Expected                           |
+| --------------------- | ---------------------------------- |
+| Valid token           | User information returned          |
+| Missing token         | Authentication error               |
+| Invalid token         | Authentication error               |
+| Expired token         | Authentication error               |
+| Token of another user | Appropriate authorization behavior |
+
+---
+
+# 10. Event Module
+
+This is the most important module for your project.
+
+The indexed API documentation includes:
+
+```text
+GET /events
+GET /events/{eventId}
+POST /todos/create-event
+```
+
+along with event activity operations. ([Event Hub][2])
+
+---
+
+# 11. Get All Events
+
+Example:
+
+```text
+GET /events
+```
+
+### Positive test
+
+Send:
+
+```text
+GET /events
+```
+
+Verify:
+
+```text
+Status code
+Response body
+Event list
+Data structure
+Response time
+```
+
+---
+
+# 12. Get Event by ID
+
+Example:
+
+```text
+GET /events/{eventId}
+```
+
+The documented endpoint uses `eventId` as a required path parameter. ([Event Hub][2])
+
+### Test cases
+
+### TC_EVENT_001
+
+Valid event ID.
+
+Expected:
+
+```text
+200 OK
+```
+
+and correct event data.
+
+### TC_EVENT_002
+
+Invalid event ID.
+
+Expected:
+
+> Appropriate 4xx response.
+
+### TC_EVENT_003
+
+Non-existing event ID.
+
+Expected:
+
+> Appropriate not-found/error response according to the API contract.
+
+### TC_EVENT_004
+
+Empty event ID.
+
+Expected:
+
+> Validation/routing error.
+
+### TC_EVENT_005
+
+Special characters in event ID.
+
+Expected:
+
+> API handles the input safely and according to the contract.
+
+---
+
+# 13. Create Event
+
+The documented API includes:
+
+```text
+POST /todos/create-event
+```
+
+for creating a new event. ([Event Hub][2])
+
+This is a very important API because it gives us many testing possibilities.
+
+---
+
+## Positive Test
+
+Use valid event data.
+
+```text
+POST /todos/create-event
+```
+
+Expected:
+
+```text
+Successful creation
++
+Event ID
++
+Correct event data
+```
+
+---
+
+# 14. Create Event — Negative Tests
+
+Test:
+
+### Missing event name
+
+```text
+name = missing
+```
+
+### Empty event name
+
+```text
+name = ""
+```
+
+### Invalid event date
+
+For example, if the API requires a future date:
+
+```text
+eventDate = past date
+```
+
+Expected:
+
+> Request should be rejected according to the documented business rule.
+
+### Missing required field
+
+Remove each required field one at a time.
+
+### Invalid data type
+
+Example:
+
+```text
+Expected: String
+Actual: Number
+```
+
+### Null values
+
+```text
+"name": null
+```
+
+### Duplicate event
+
+Attempt to create the same event again if uniqueness is required.
+
+---
+
+# 15. Important EventHub Scenario
+
+Suppose the requirement says:
+
+> **Event date must be in the future.**
+
+Then create these tests:
+
+| Test Data           | Expected                 |
+| ------------------- | ------------------------ |
+| Yesterday           | Reject                   |
+| Today               | According to requirement |
+| Tomorrow            | Accept                   |
+| Future date         | Accept                   |
+| Empty date          | Reject                   |
+| Invalid date format | Reject                   |
+| Null date           | Reject                   |
+
+This is an excellent example of **boundary + business-rule testing**.
+
+---
+
+# 16. Update Event
+
+Depending on the exact current Swagger contract, use the update operation documented there rather than assuming a specific method/path.
+
+The key testing concept is:
+
+```text
+Update existing event
+```
+
+### Test cases
+
+```text
+Valid event ID + valid update
+Valid ID + invalid data
+Invalid ID
+Missing required field
+Empty value
+Unauthorized update
+Update another user's event
+Duplicate/conflicting data
+```
+
+---
+
+# 17. Delete Event
+
+Again, use the exact current delete operation shown in your Swagger documentation.
+
+Test:
+
+### Positive
+
+```text
+Delete valid event
+```
+
+Expected:
+
+> Event is deleted successfully.
+
+### Negative
+
+```text
+Delete invalid event
+Delete non-existing event
+Delete without authentication
+Delete event belonging to another user
+Delete same event twice
+```
+
+---
+
+# 18. API Chaining
+
+This is **very important for real API testing**.
+
+Suppose you create an event.
+
+```text
+POST Create Event
+       ↓
+Response gives eventId
+       ↓
+GET /events/{eventId}
+       ↓
+PUT/PATCH update event
+       ↓
+DELETE event
+```
+
+The generated ID is dynamic.
+
+For example:
+
+```text
+POST
+ ↓
+eventId = 12345
+ ↓
+GET /events/12345
+```
+
+We should **capture the ID from the first response** rather than hard-code it.
+
+This concept is called:
+
+> **API chaining / request chaining**
+
+---
+
+# 19. Ticket Module
+
+The documentation includes ticket-related operations such as:
+
+```text
+POST /todos/buy
+POST /todos/mytickets
+```
+
+for buying tickets and retrieving user tickets. ([Event Hub][2])
+
+### Buy ticket tests
+
+Test:
+
+```text
+Valid event
+Valid ticket information
+Valid authentication
+```
+
+Then negative scenarios:
+
+```text
+Invalid event
+Invalid quantity
+Zero quantity
+Negative quantity
+Missing required field
+Unauthorized request
+Already purchased scenario
+Insufficient availability
+```
+
+The exact expected status and validation depend on the current API contract.
+
+---
+
+# 20. Smoke Test Suite
+
+Now let's create your **EventHub Smoke Suite**.
+
+Smoke testing should contain only the critical functionality.
+
+### Smoke Test Cases
+
+| ID      | Scenario              | Expected                 |
+| ------- | --------------------- | ------------------------ |
+| SMK_001 | User signup           | User created             |
+| SMK_002 | User login            | Token returned           |
+| SMK_003 | Get current user      | User data returned       |
+| SMK_004 | Get all events        | Events returned          |
+| SMK_005 | Get event by valid ID | Event returned           |
+| SMK_006 | Create event          | Event created            |
+| SMK_007 | Update event          | Event updated            |
+| SMK_008 | Delete event          | Event deleted            |
+| SMK_009 | Buy ticket            | Ticket purchase succeeds |
+| SMK_010 | Get user tickets      | Tickets returned         |
+
+**Note:** Include an operation in smoke only if the current Swagger contract/environment supports it and you have suitable test data.
+
+---
+
+# 21. Sanity Test Suite
+
+Suppose developers fixed a bug in:
+
+> Create Event API.
+
+We don't need to run every test immediately.
+
+We focus on the affected functionality.
+
+### Sanity tests
+
+```text
+SAN_001
+Create event with valid data
+
+SAN_002
+Create event without required field
+
+SAN_003
+Create event with invalid date
+
+SAN_004
+Create event with duplicate data
+
+SAN_005
+Create event without authentication
+
+SAN_006
+Verify created event can be retrieved
+```
+
+If all are good, we can proceed to broader regression.
+
+---
+
+# 22. Regression Test Suite
+
+Regression is much broader.
+
+### User Regression
+
+```text
+REG_USER_001
+Signup with valid data
+
+REG_USER_002
+Signup with duplicate email
+
+REG_USER_003
+Login with valid credentials
+
+REG_USER_004
+Login with invalid credentials
+
+REG_USER_005
+Get current user
+
+REG_USER_006
+Invalid token
+```
+
+### Event Regression
+
+```text
+REG_EVENT_001
+Get all events
+
+REG_EVENT_002
+Get valid event
+
+REG_EVENT_003
+Get invalid event
+
+REG_EVENT_004
+Create event
+
+REG_EVENT_005
+Create event with invalid data
+
+REG_EVENT_006
+Update event
+
+REG_EVENT_007
+Delete event
+```
+
+### Ticket Regression
+
+```text
+REG_TICKET_001
+Buy ticket
+
+REG_TICKET_002
+Buy invalid ticket
+
+REG_TICKET_003
+Get user tickets
+```
+
+---
+
+# 23. EventHub API Test Plan
+
+Now let's structure a professional test plan.
+
+## 23.1 Test Objective
+
+> To verify the functionality, reliability, validation, security and data integrity of the EventHub REST APIs.
+
+---
+
+## 23.2 Scope
+
+Testing includes:
+
+```text
+User APIs
+Event APIs
+Ticket APIs
+Authentication
+Authorization
+Request validation
+Response validation
+Error handling
+```
+
+---
+
+## 23.3 Out of Scope
+
+Depending on the project requirements:
+
+```text
+UI visual testing
+Third-party systems outside the test environment
+Production data
+Infrastructure-level testing
+```
+
+---
+
+## 23.4 Test Types
+
+```text
+Functional
+Positive
+Negative
+Smoke
+Sanity
+Regression
+Integration
+Security
+Performance
+Validation
+```
+
+---
+
+## 23.5 Entry Criteria
+
+Testing can begin when:
+
+```text
+✓ API environment is available
+✓ API documentation is available
+✓ Required credentials are available
+✓ Test data is available
+✓ Required tools are configured
+```
+
+---
+
+## 23.6 Exit Criteria
+
+Testing can be completed when:
+
+```text
+✓ Planned tests executed
+✓ Critical defects resolved
+✓ Regression completed
+✓ Major functionality verified
+✓ Test results documented
+```
+
+---
+
+# 24. Defect Example
+
+Suppose:
+
+### Requirement
+
+> Event date must be in the future.
+
+### Request
+
+```json
+{
+  "eventDate": "2020-01-01"
+}
+```
+
+### Actual
+
+```text
+201 Created
+```
+
+### Expected
+
+> API should reject the request.
+
+This is a potential **business validation defect**.
+
+### Bug report
+
+```text
+Title:
+Event API allows creation of events with past dates
+
+Endpoint:
+POST /todos/create-event
+
+Severity:
+High
+
+Priority:
+High
+
+Steps:
+1. Login
+2. Obtain authentication token
+3. Send create-event request
+4. Provide a past event date
+5. Submit request
+
+Expected:
+API should reject the request.
+
+Actual:
+API accepts the request and creates the event.
+```
+
+This is the kind of practical explanation that is much stronger in an interview than simply saying:
+
+> "I know API testing."
+
+---
+
+# 25. Postman Workflow for EventHub
+
+Your practical workflow should look like this:
+
+```text
+Create Postman Collection
+          ↓
+Create Environment
+          ↓
+Set Base URL
+          ↓
+Signup/Login
+          ↓
+Capture Token
+          ↓
+Use Token in Protected APIs
+          ↓
+Test GET
+          ↓
+Test POST
+          ↓
+Capture Dynamic ID
+          ↓
+Test GET by ID
+          ↓
+Test Update
+          ↓
+Test Delete
+          ↓
+Validate Responses
+          ↓
+Add Test Scripts
+          ↓
+Run Collection
+```
+
+---
+
+# 26. Recommended Postman Collection Structure
+
+Create:
+
+```text
+EventHub API
+│
+├── 01_User
+│   ├── Signup
+│   ├── Login
+│   ├── Current User
+│   └── Password
+│
+├── 02_Events
+│   ├── Get All Events
+│   ├── Get Event
+│   ├── Create Event
+│   ├── Update Event
+│   └── Delete Event
+│
+├── 03_Tickets
+│   ├── Buy Ticket
+│   └── My Tickets
+│
+└── 04_Negative Tests
+    ├── Invalid Token
+    ├── Missing Field
+    ├── Invalid ID
+    └── Invalid Data
+```
+
+Use the actual current Swagger operations to populate the folders.
+
+---
+
+# 27. Environment Variables
+
+Instead of repeatedly typing URLs and tokens, use variables.
+
+Example:
+
+```text
+baseUrl
+token
+eventId
+userId
+```
+
+Then:
+
+```text
+{{baseUrl}}
+```
+
+can represent your API base URL.
+
+And:
+
+```text
+{{token}}
+```
+
+can represent the authentication token.
+
+---
+
+# 28. API Chaining in Postman
+
+Example flow:
+
+```text
+Login
+ ↓
+Token
+ ↓
+Create Event
+ ↓
+eventId
+ ↓
+Get Event
+ ↓
+Update Event
+ ↓
+Delete Event
+```
+
+This is much closer to real project testing.
+
+---
+
+# 29. What Bugs Can You Find in EventHub?
+
+While testing, look for:
+
+### Functional bugs
+
+```text
+Create API doesn't create event
+```
+
+### Validation bugs
+
+```text
+Past event date accepted
+```
+
+### Authentication bugs
+
+```text
+Protected API works without token
+```
+
+### Authorization bugs
+
+```text
+User can modify another user's event
+```
+
+### Data bugs
+
+```text
+Response contains incorrect event details
+```
+
+### Status-code bugs
+
+```text
+Invalid request returns 200 instead of appropriate error
+```
+
+### Error-message bugs
+
+```text
+Incorrect or misleading error message
+```
+
+### Duplicate-data bugs
+
+```text
+Same event can be created unexpectedly
+```
+
+### Performance bugs
+
+```text
+API response takes excessively long
+```
+
+### Security bugs
+
+```text
+Sensitive information exposed in response
+```
+
+---
+
+# 30. Important Interview Scenario
+
+### Interviewer:
+
+> You send a POST request to create an event. The API returns 201, but the event isn't actually visible when you retrieve it. What will you do?
+
+### Strong answer:
+
+> "First, I would verify the request payload and the 201 response. Then I would capture the returned event ID and perform a GET request for that event. I would compare the response with the creation request. I would also verify whether the API is asynchronous, check whether the data was persisted correctly, and investigate the backend/database or server logs if necessary. I would report a defect if the API contract says the event should be immediately retrievable."
+
+That's a **QA-level answer**.
+
+---
+
+# 31. Another Interview Scenario
+
+### Interviewer:
+
+> The API returns 500. What will you do?
+
+Don't immediately say:
+
+> "I'll report a bug."
+
+Instead:
+
+```text
+500 received
+   ↓
+Check request
+   ↓
+Check headers
+   ↓
+Check authentication
+   ↓
+Check test data
+   ↓
+Check whether issue is reproducible
+   ↓
+Check other environments
+   ↓
+Review response/error
+   ↓
+Check server logs if available
+   ↓
+Determine client vs server issue
+   ↓
+Report defect if confirmed
+```
+
+---
+
+# 32. Another Interview Scenario
+
+### Interviewer:
+
+> How would you test an Event Creation API?
+
+### Strong answer:
+
+> "First I would study the API documentation to understand the endpoint, HTTP method, authentication, required headers, request body, response and business rules. Then I would test valid event data, missing required fields, invalid data types, null and empty values, boundary values, duplicate data, invalid dates and authentication/authorization scenarios. I would validate the status code, response body, headers, data persistence and business rules. After creation, I would retrieve the event using the generated ID to verify that the created data is actually available."
+
+That answer demonstrates **test thinking**, not memorization.
+
+---
+
+# 33. Final EventHub Test Strategy
+
+Your overall project can be represented as:
+
+```text
+                    EVENTHUB API
+                         │
+        ┌────────────────┼────────────────┐
+        ↓                ↓                ↓
+      USER             EVENTS           TICKETS
+        │                │                │
+     Signup           Get Events       Buy Ticket
+     Login            Get Event        My Tickets
+     Profile          Create
+                      Update
+                      Delete
+        │                │                │
+        └────────────────┼────────────────┘
+                         ↓
+                  API TESTING
+                         ↓
+        ┌─────────────────────────────────┐
+        │ Functional                      │
+        │ Positive / Negative             │
+        │ Validation                      │
+        │ Authentication / Authorization  │
+        │ Smoke                           │
+        │ Sanity                          │
+        │ Regression                      │
+        │ Security                        │
+        │ Performance                     │
+        └─────────────────────────────────┘
+```
+
+---
+
+# 34. Your Complete API Testing Learning Path
+
+You've now covered the complete theory in four parts:
+
+```text
+PART 1
+Client
+Server
+Client-Server Architecture
+API
+Web Service
+SOAP
+REST
+GraphQL
+gRPC
+        ↓
+PART 2
+REST
+URL
+Domain
+Endpoint
+Path
+Path Parameter
+Query Parameter
+Headers
+Request/Response
+HTTP/HTTPS
+HTTP Methods
+Status Codes
+        ↓
+PART 3
+API Testing
+Testing Types
+Testing Process
+Tools
+Swagger/OpenAPI
+Test Case Design
+Test Case Template
+Bugs
+Challenges
+        ↓
+PART 4
+EventHub
+Test Plan
+Authentication
+User APIs
+Event APIs
+Ticket APIs
+Smoke
+Sanity
+Regression
+Postman Workflow
+API Chaining
+Defect Examples
+Interview Scenarios
+```
+
+
 
 
 
